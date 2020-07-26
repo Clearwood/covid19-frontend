@@ -3,10 +3,24 @@ import { ResponsiveLine } from "@nivo/line";
 
 class Graph extends React.Component {
   render() {
+    const data = [
+      {
+        id: "deaths",
+        color: "hsl(201, 70%, 50%)",
+        data: this.props.data.deaths,
+      },
+      {
+        id: "cases",
+        color: "hsl(96, 70%, 50%)",
+        data: this.props.data.cases,
+      },
+    ];
+    console.log(data);
+    console.log(this.props);
     return (
       <div className="App">
         <ResponsiveLine
-          data={this.props.data}
+          data={data}
           margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
           xScale={{ type: "point" }}
           yScale={{
@@ -23,7 +37,7 @@ class Graph extends React.Component {
             tickSize: 5,
             tickPadding: 5,
             tickRotation: 0,
-            legend: "transportation",
+            legend: "Covid 19 Cases",
             legendOffset: 36,
             legendPosition: "middle",
           }}
