@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
-import logo from "./logo.svg";
 import "./App.css";
-import Graph from "./graph.js";
-import { Input } from "antd";
+import { Layout, Menu, Upload, message, Button } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+import Graph from "./components/graph.js";
+import Selection from "./components/Selection.js";
+import "antd/dist/antd.css";
+const { Header, Content, Footer } = Layout;
 
 function App() {
   const [data, setData] = useState({
@@ -28,37 +31,138 @@ function App() {
     ],
     geoId: "AF",
   });
+  const [countries, setCountries] = useState([
+    {
+      _id: "5f1dd6e3326b132d1f1abe49",
+      name: "Afghanistan",
+      geoId: "AF",
+      countryterritoryCode: "AFG",
+      continentExp: "Asia",
+      createdAt: "2020-07-26T19:17:55.833Z",
+      updatedAt: "2020-07-26T19:17:55.833Z",
+      __v: 0,
+    },
+  ]);
 
   useEffect(() => {
     const requestOptions = {
-      method: "POST",
+      method: "GET",
       headers: { "Content-Type": "application/json" },
     };
-    fetch("localhost:5000/country", requestOptions)
+    fetch("http://localhost:3100/country", requestOptions)
       .then((response) => response.json())
-      .then((data) => setData(data));
+      .then((data) => setCountries(data))
+      .catch((err) => {
+        throw new Error(err);
+      });
     // Run! Like go get some data from an API.
   }, []);
 
-  const submitForm = (e) => {
-    e.preventDefault();
-    const value = e.target.value;
+  const submitForm = (value) => {
+    const requestOptions = {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    };
+    fetch("http://localhost:3100/cases/byCountry/" + value, requestOptions)
+      .then((response) => response.json())
+      .then((data) => setData(data))
+      .catch((err) => {
+        throw new Error(err);
+      });
+  };
+  const [current, setCurrent] = useState({ current: "dashboard" });
+  const [uploading, setUploading] = useState(false);
+  const [fileList, setFileList] = useState([]);
+  const props = {
+    beforeUpload: (file) => {
+      setFileList([file]);
+      return false;
+    },
+    fileList,
+  };
+  const handleClick = (e) => {
+    console.log("click ", e);
+    setCurrent({ current: e.key });
+  };
+  const handleBatchUpload = async (content) => {
+    let batch = [];
+    for (let i = 0; i < content.length; i++) {
+      batch.push(content[i]);
+      if (i % 250 == 0) {
+        const requestOptions = {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(batch),
+        };
+        batch = [];
+        console.log(batch);
+        console.log(i);
+        await fetch("http://localhost:3100/cases/init", requestOptions).catch(
+          (err) => {
+            throw new Error(err);
+          }
+        );
+      }
+    }
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(batch),
     };
-    fetch("localhost:5000/cases/byCountry/" + value, requestOptions)
-      .then((response) => response.json())
-      .then((data) => setData(data));
+    await fetch("http://localhost:3100/cases/init", requestOptions).catch(
+      (err) => {
+        throw new Error(err);
+      }
+    );
   };
-
+  const handleUpload = () => {
+    const file = fileList[0];
+    const success = function (content) {
+      content = JSON.parse(content).records;
+      handleBatchUpload(content).then(setUploading(false));
+      //console.log(JSON.stringify(content));
+    };
+    setUploading(true);
+    var fileReader = new FileReader();
+    fileReader.onload = function (evt) {
+      success(evt.target.result);
+    };
+    fileReader.readAsText(file);
+  };
   return (
-    <div>
-      <form onSubmit={submitForm}>
-        <Input placeholder="country" />
-      </form>
-      <Graph data={data} />
-    </div>
+    <Layout className="layout">
+      <Header>
+        <Menu onClick={handleClick} selectedKeys={[current]} mode="horizontal">
+          <Menu.Item key="dashboard">Dashboard</Menu.Item>
+          <Menu.Item key="upload">Upload</Menu.Item>
+        </Menu>
+      </Header>
+      <Content style={{ padding: "0 50px" }}>
+        {current.current == "dashboard" ? (
+          <div id="one">
+            <Selection onSubmit={submitForm} countries={countries} />
+            <Graph data={data} />
+          </div>
+        ) : (
+          <div>
+            <Upload {...props}>
+              <Button>
+                <UploadOutlined /> Select File
+              </Button>
+            </Upload>
+            <Button
+              type="primary"
+              onClick={handleUpload}
+              disabled={fileList.length === 0}
+              loading={uploading}
+              style={{ marginTop: 16 }}
+            >
+              {uploading ? "Uploading" : "Start Upload"}
+            </Button>
+          </div>
+        )}
+      </Content>
+    </Layout>
   );
 }
 

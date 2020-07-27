@@ -15,6 +15,14 @@ code {
 body,
 #root,
 html,
-div {
+#App,
+#one,
+.layout,
+.ant-layout-content,
+.App {
   height: 100%;
+}
+.ant-layout-content,
+.ant-layout-header {
+  background: white !important;
 }
