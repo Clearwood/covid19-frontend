@@ -25,25 +25,22 @@ class Graph extends React.Component {
           xScale={{
             type: "time",
             format: "%Y-%m-%dT%H:%M:%S.%LZ",
-            precision: "day",
           }}
-          indexBy="date"
           xFormat="time:%Y-%m-%dT%H:%M:%S.%L%Z"
           yScale={{
             type: "linear",
             min: "auto",
             max: "auto",
-            stacked: true,
-            reverse: false,
+            stacked: false,
           }}
           axisTop={null}
           axisRight={null}
           axisBottom={{
-            tickValues: "every 10 day",
+            tickValues: "every 9 days",
             tickSize: 5,
             tickPadding: 5,
             tickRotation: 0,
-            format: "%d.%m.%Y",
+            format: "%b %d",
             legend: "Covid 19 Cases",
             legendOffset: 36,
             legendPosition: "middle",
@@ -65,6 +62,7 @@ class Graph extends React.Component {
           pointLabel="y"
           pointLabelYOffset={-12}
           useMesh={true}
+          curve="monotoneX"
           legends={[
             {
               anchor: "bottom-right",
