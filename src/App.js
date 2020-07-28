@@ -11,21 +11,21 @@ function App() {
   const [data, setData] = useState({
     cases: [
       {
-        x: "14/06/2020",
-        y: "10",
+        x: "2020-07-14T19:17:55.924Z",
+        y: "556",
       },
       {
-        x: "13/06/2020",
-        y: "20",
+        x: "2020-07-13T19:17:55.999Z",
+        y: "656",
       },
     ],
     deaths: [
       {
-        x: "14/06/2020",
+        x: "2020-07-14T19:17:55.924Z",
         y: "5",
       },
       {
-        x: "13/06/2020",
+        x: "2020-07-13T19:17:55.999Z",
         y: "20",
       },
     ],
@@ -88,7 +88,7 @@ function App() {
     let batch = [];
     for (let i = 0; i < content.length; i++) {
       batch.push(content[i]);
-      if (i % 250 == 0) {
+      if (i % 250 === 0) {
         const requestOptions = {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -97,11 +97,7 @@ function App() {
         batch = [];
         console.log(batch);
         console.log(i);
-        await fetch("http://localhost:3100/cases/init", requestOptions).catch(
-          (err) => {
-            throw new Error(err);
-          }
-        );
+        await fetch("http://localhost:3100/cases/init", requestOptions);
       }
     }
     const requestOptions = {
@@ -109,11 +105,7 @@ function App() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(batch),
     };
-    await fetch("http://localhost:3100/cases/init", requestOptions).catch(
-      (err) => {
-        throw new Error(err);
-      }
-    );
+    await fetch("http://localhost:3100/cases/init", requestOptions);
   };
   const handleUpload = () => {
     const file = fileList[0];
@@ -138,10 +130,10 @@ function App() {
         </Menu>
       </Header>
       <Content style={{ padding: "0 50px" }}>
-        {current.current == "dashboard" ? (
+        {current.current === "dashboard" ? (
           <div id="one">
             <Selection onSubmit={submitForm} countries={countries} />
-            <Graph data={data} />
+            <Graph cases={data.cases} deaths={data.deaths} />
           </div>
         ) : (
           <div>

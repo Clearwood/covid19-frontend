@@ -1,28 +1,35 @@
 import React from "react";
 import { ResponsiveLine } from "@nivo/line";
+import { timeFormat } from "d3-time-format";
 
 class Graph extends React.Component {
   render() {
+    const deaths = this.props.deaths;
+    const cases = this.props.cases;
     const data = [
       {
         id: "deaths",
         color: "hsl(201, 70%, 50%)",
-        data: this.props.data.deaths,
+        data: deaths,
       },
       {
         id: "cases",
         color: "hsl(96, 70%, 50%)",
-        data: this.props.data.cases,
+        data: cases,
       },
     ];
-    console.log(data);
-    console.log(this.props);
     return (
       <div className="App">
         <ResponsiveLine
           data={data}
           margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-          xScale={{ type: "point" }}
+          xScale={{
+            type: "time",
+            format: "%Y-%m-%dT%H:%M:%S.%LZ",
+            precision: "day",
+          }}
+          indexBy="date"
+          xFormat="time:%Y-%m-%dT%H:%M:%S.%L%Z"
           yScale={{
             type: "linear",
             min: "auto",
@@ -33,10 +40,11 @@ class Graph extends React.Component {
           axisTop={null}
           axisRight={null}
           axisBottom={{
-            orient: "bottom",
+            tickValues: "every 10 day",
             tickSize: 5,
             tickPadding: 5,
             tickRotation: 0,
+            format: "%d.%m.%Y",
             legend: "Covid 19 Cases",
             legendOffset: 36,
             legendPosition: "middle",
