@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
-import { Layout, Menu, Upload, message, Button } from "antd";
+import { Layout, Menu, Upload, Button } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import Graph from "./components/graph.js";
-import Selection from "./components/Selection.js";
+import Selection from "./components/selection.js";
 import "antd/dist/antd.css";
-const { Header, Content, Footer } = Layout;
+import { useAlert } from "react-alert";
+
+const { Header, Content } = Layout;
 
 function App() {
+  const alert = useAlert();
   const [data, setData] = useState({
     cases: [
       {
@@ -44,19 +47,23 @@ function App() {
     },
   ]);
 
-  useEffect(() => {
+  useEffect(fetchCountries, []);
+
+  function fetchCountries() {
     const requestOptions = {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     };
     fetch("http://localhost:3100/country", requestOptions)
       .then((response) => response.json())
-      .then((data) => setCountries(data))
+      .then((data) => {
+        setCountries(data);
+      })
       .catch((err) => {
         throw new Error(err);
       });
     // Run! Like go get some data from an API.
-  }, []);
+  }
 
   const submitForm = (value) => {
     const requestOptions = {
@@ -65,7 +72,10 @@ function App() {
     };
     fetch("http://localhost:3100/cases/byCountry/" + value, requestOptions)
       .then((response) => response.json())
-      .then((data) => setData(data))
+      .then((data) => {
+        console.log(data);
+        setData(data);
+      })
       .catch((err) => {
         throw new Error(err);
       });
@@ -81,7 +91,6 @@ function App() {
     fileList,
   };
   const handleClick = (e) => {
-    console.log("click ", e);
     setCurrent({ current: e.key });
   };
   const handleBatchUpload = async (content) => {
@@ -110,12 +119,17 @@ function App() {
   const handleUpload = () => {
     const file = fileList[0];
     const success = function (content) {
-      content = JSON.parse(content).records;
-      handleBatchUpload(content).then(setUploading(false));
+      content = JSON.parse(content)["records"];
+      handleBatchUpload(content).then(() => {
+        setUploading(false);
+        alert.show("Successfully uploaded data");
+        setCurrent({ current: "dashboard" });
+        fetchCountries();
+      });
       //console.log(JSON.stringify(content));
     };
     setUploading(true);
-    var fileReader = new FileReader();
+    const fileReader = new FileReader();
     fileReader.onload = function (evt) {
       success(evt.target.result);
     };
