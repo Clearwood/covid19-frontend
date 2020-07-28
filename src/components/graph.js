@@ -1,6 +1,5 @@
 import React from "react";
 import { ResponsiveLine } from "@nivo/line";
-import { timeFormat } from "d3-time-format";
 
 class Graph extends React.Component {
   render() {
