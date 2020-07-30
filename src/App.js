@@ -1,53 +1,26 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
-import { Layout, Menu, Upload, Button } from "antd";
+import { Layout, Menu, Upload, Button, DatePicker } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import Graph from "./components/graph.js";
 import Selection from "./components/selection.js";
+import Table from "./components/table.js";
 import "antd/dist/antd.css";
 import { useAlert } from "react-alert";
+import moment from 'moment';
 
 const { Header, Content } = Layout;
 
 function App() {
   const alert = useAlert();
-  const [data, setData] = useState({
-    cases: [
-      {
-        x: "2020-07-14T19:17:55.924Z",
-        y: "556",
-      },
-      {
-        x: "2020-07-13T19:17:55.999Z",
-        y: "656",
-      },
-    ],
-    deaths: [
-      {
-        x: "2020-07-14T19:17:55.924Z",
-        y: "5",
-      },
-      {
-        x: "2020-07-13T19:17:55.999Z",
-        y: "20",
-      },
-    ],
-    geoId: "AF",
-  });
-  const [countries, setCountries] = useState([
-    {
-      _id: "5f1dd6e3326b132d1f1abe49",
-      name: "Afghanistan",
-      geoId: "AF",
-      countryterritoryCode: "AFG",
-      continentExp: "Asia",
-      createdAt: "2020-07-26T19:17:55.833Z",
-      updatedAt: "2020-07-26T19:17:55.833Z",
-      __v: 0,
-    },
-  ]);
+  const [data, setData] = useState({cases: null, deaths: null});
+  const [countries, setCountries] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const date = moment(new Date()).hour(0).minute(0).second(0).millisecond(0);
+  const [selectedDate, setSelectedDate] = useState(date);
 
   useEffect(fetchCountries, []);
+  useEffect(fetchTableData, []);
 
   function fetchCountries() {
     const requestOptions = {
@@ -62,7 +35,20 @@ function App() {
       .catch((err) => {
         throw new Error(err);
       });
-    // Run! Like go get some data from an API.
+  }
+  function fetchTableData() {
+    const requestOptions = {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    };
+    fetch(`http://localhost:3100/cases/world/${moment(selectedDate).toDate()}`, requestOptions)
+        .then((response) => response.json())
+        .then((data) => {
+          setTableData(data);
+        })
+        .catch((err) => {
+          throw new Error(err);
+        });
   }
 
   const submitForm = (value) => {
@@ -147,7 +133,17 @@ function App() {
         {current.current === "dashboard" ? (
           <div id="one">
             <Selection onSubmit={submitForm} countries={countries} />
-            <Graph cases={data.cases} deaths={data.deaths} />
+            {data.cases && data.deaths? (
+                <div>
+                  <Graph data={data.cases} title={"Cases"} color={"blue"}/>
+                  <Graph data={data.deaths} title={"Deaths"} color={"red"}/>
+                </div>
+            ) : (
+                <div>
+                  <DatePicker onChange={setSelectedDate} />
+                  <Table data={tableData}/>
+                </div>
+            )}
           </div>
         ) : (
           <div>

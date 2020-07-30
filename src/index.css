@@ -22,6 +22,15 @@ html,
 .App {
   height: 100%;
 }
+.graph {
+  height: 35%;
+  margin: 0.5em 2em 5em;
+}
+.graph-header {
+  text-decoration: underline;
+  font-weight: bold;
+  text-align: center;
+}
 .ant-layout-content,
 .ant-layout-header {
   background: white !important;

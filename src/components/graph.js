@@ -3,25 +3,19 @@ import { ResponsiveLine } from "@nivo/line";
 
 class Graph extends React.Component {
   render() {
-    const deaths = this.props.deaths;
-    const cases = this.props.cases;
     const data = [
       {
-        id: "deaths",
-        color: "hsl(201, 70%, 50%)",
-        data: deaths,
-      },
-      {
-        id: "cases",
-        color: "hsl(96, 70%, 50%)",
-        data: cases,
+        id: this.props.title,
+        data: this.props.data
       },
     ];
     return (
-      <div className="App">
+      <div className="graph">
+        <h3 className="graph-header">New Covid 19 {this.props.title} by day</h3>
         <ResponsiveLine
           data={data}
-          margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+          enablePoints={false}
+          margin={{ top: 15, right: 110, bottom: 50, left: 60 }}
           xScale={{
             type: "time",
             format: "%Y-%m-%dT%H:%M:%S.%LZ",
@@ -36,13 +30,12 @@ class Graph extends React.Component {
           axisTop={null}
           axisRight={null}
           axisBottom={{
-            tickValues: "every 9 days",
+            tickValues: "every 8 days",
             tickSize: 5,
             tickPadding: 5,
             tickRotation: 0,
             format: "%b %d",
-            legend: "Covid 19 Cases",
-            legendOffset: 36,
+            legendOffset: 30,
             legendPosition: "middle",
           }}
           axisLeft={{
@@ -51,15 +44,15 @@ class Graph extends React.Component {
             tickPadding: 5,
             tickRotation: 0,
             legend: "count",
-            legendOffset: -40,
+            legendOffset: -50,
             legendPosition: "middle",
           }}
-          colors={{ scheme: "nivo" }}
+          colors={this.props.color}
           pointSize={10}
           pointColor={{ theme: "background" }}
           pointBorderWidth={2}
           pointBorderColor={{ from: "serieColor" }}
-          pointLabel="y"
+          pointLabel="value"
           pointLabelYOffset={-12}
           useMesh={true}
           curve="monotoneX"
