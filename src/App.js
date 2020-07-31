@@ -4,7 +4,7 @@ import { Layout, Menu, Upload, Button, DatePicker } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import Graph from "./components/graph.js";
 import Selection from "./components/selection.js";
-import Table from "./components/table.js";
+import Table from "./components/table";
 import "antd/dist/antd.css";
 import { useAlert } from "react-alert";
 import moment from 'moment';
@@ -13,14 +13,47 @@ const { Header, Content } = Layout;
 
 function App() {
   const alert = useAlert();
-  const [data, setData] = useState({cases: null, deaths: null});
-  const [countries, setCountries] = useState([]);
-  const [tableData, setTableData] = useState([]);
-  const date = moment(new Date()).hour(0).minute(0).second(0).millisecond(0);
+  const [data, setData] = useState({
+    cases: [
+      {
+        x: "2020-07-14T19:17:55.924Z",
+        y: "556",
+      },
+      {
+        x: "2020-07-13T19:17:55.999Z",
+        y: "656",
+      },
+    ],
+    deaths: [
+      {
+        x: "2020-07-14T19:17:55.924Z",
+        y: "5",
+      },
+      {
+        x: "2020-07-13T19:17:55.999Z",
+        y: "20",
+      },
+    ],
+    geoId: "AF",
+  });
+  const [countries, setCountries] = useState([
+    {
+      _id: "5f1dd6e3326b132d1f1abe49",
+      name: "Afghanistan",
+      geoId: "AF",
+      countryterritoryCode: "AFG",
+      continentExp: "Asia",
+      createdAt: "2020-07-26T19:17:55.833Z",
+      updatedAt: "2020-07-26T19:17:55.833Z",
+      __v: 0,
+    },
+  ]);
+  const date = moment(new Date());
   const [selectedDate, setSelectedDate] = useState(date);
+  const [tableData, setTableData] = useState([]);
 
   useEffect(fetchCountries, []);
-  useEffect(fetchTableData, []);
+  useEffect(fetchTableData, [selectedDate]);
 
   function fetchCountries() {
     const requestOptions = {
@@ -30,6 +63,7 @@ function App() {
     fetch("http://localhost:3100/country", requestOptions)
       .then((response) => response.json())
       .then((data) => {
+        data.unshift({name:"All", geoId: "all"});
         setCountries(data);
       })
       .catch((err) => {
@@ -41,10 +75,11 @@ function App() {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     };
-    fetch(`http://localhost:3100/cases/world/${moment(selectedDate).toDate()}`, requestOptions)
+    const dateString = moment(selectedDate).utc(true).hour(0).minute(0).second(0).millisecond(0).toISOString();
+    fetch(`http://localhost:3100/cases/world/${dateString}`, requestOptions)
         .then((response) => response.json())
         .then((data) => {
-          setTableData(data);
+          setTableData(data.sort((a, b) => b.cases - a.cases));
         })
         .catch((err) => {
           throw new Error(err);
@@ -52,21 +87,26 @@ function App() {
   }
 
   const submitForm = (value) => {
-    const requestOptions = {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    };
-    fetch("http://localhost:3100/cases/byCountry/" + value, requestOptions)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        setData(data);
-      })
-      .catch((err) => {
-        throw new Error(err);
-      });
+    if (value && value !== "all") {
+      const requestOptions = {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      };
+      fetch("http://localhost:3100/cases/byCountry/" + value, requestOptions)
+          .then((response) => response.json())
+          .then((data) => {
+            setCurrent({current: "graph"});
+            setData(data);
+          })
+          .catch((err) => {
+            throw new Error(err);
+          });
+    } else {
+      setCurrent({current: "table"});
+      fetchTableData()
+    }
   };
-  const [current, setCurrent] = useState({ current: "dashboard" });
+  const [current, setCurrent] = useState({ current: "table" });
   const [uploading, setUploading] = useState(false);
   const [fileList, setFileList] = useState([]);
   const props = {
@@ -109,7 +149,7 @@ function App() {
       handleBatchUpload(content).then(() => {
         setUploading(false);
         alert.show("Successfully uploaded data");
-        setCurrent({ current: "dashboard" });
+        setCurrent({ current: "graph" });
         fetchCountries();
       });
       //console.log(JSON.stringify(content));
@@ -122,49 +162,49 @@ function App() {
     fileReader.readAsText(file);
   };
   return (
-    <Layout className="layout">
-      <Header>
-        <Menu onClick={handleClick} selectedKeys={[current]} mode="horizontal">
-          <Menu.Item key="dashboard">Dashboard</Menu.Item>
-          <Menu.Item key="upload">Upload</Menu.Item>
-        </Menu>
-      </Header>
-      <Content style={{ padding: "0 50px" }}>
-        {current.current === "dashboard" ? (
-          <div id="one">
-            <Selection onSubmit={submitForm} countries={countries} />
-            {data.cases && data.deaths? (
-                <div>
-                  <Graph data={data.cases} title={"Cases"} color={"blue"}/>
-                  <Graph data={data.deaths} title={"Deaths"} color={"red"}/>
-                </div>
-            ) : (
-                <div>
-                  <DatePicker onChange={setSelectedDate} />
-                  <Table data={tableData}/>
-                </div>
-            )}
-          </div>
-        ) : (
-          <div>
-            <Upload {...props}>
-              <Button>
-                <UploadOutlined /> Select File
-              </Button>
-            </Upload>
-            <Button
-              type="primary"
-              onClick={handleUpload}
-              disabled={fileList.length === 0}
-              loading={uploading}
-              style={{ marginTop: 16 }}
-            >
-              {uploading ? "Uploading" : "Start Upload"}
-            </Button>
-          </div>
-        )}
-      </Content>
-    </Layout>
+      <Layout className="layout">
+        <Header>
+          <Menu onClick={handleClick} selectedKeys={[current]} mode="horizontal">
+            <Menu.Item key="graph">Dashboard</Menu.Item>
+            <Menu.Item key="upload">Upload</Menu.Item>
+          </Menu>
+        </Header>
+        <Content style={{ padding: "0 50px" }}>
+          {current.current === "upload" ? (
+              <div>
+                <Upload {...props}>
+                  <Button>
+                    <UploadOutlined /> Select File
+                  </Button>
+                </Upload>
+                <Button
+                    type="primary"
+                    onClick={handleUpload}
+                    disabled={fileList.length === 0}
+                    loading={uploading}
+                    style={{ marginTop: 16 }}
+                >
+                  {uploading ? "Uploading" : "Start Upload"}
+                </Button>
+              </div>
+          ) : (
+              <div id="one">
+                <Selection onSubmit={submitForm} countries={countries} />
+                {current.current === "table" ? (<DatePicker style={{float: 'right'}} onChange={setSelectedDate} />) : ('')}
+                {current.current === "graph" ? (
+                    <div style={{ marginTop: 32 }}>
+                      <Graph data={data.cases} title={"Cases"} color={"blue"}/>
+                      <Graph data={data.deaths} title={"Deaths"} color={"red"}/>
+                    </div>
+                ) : (
+                    <div style={{ marginTop: 32 }}>
+                      <Table data={tableData}/>
+                    </div>
+                )}
+            </div>
+          )}
+        </Content>
+      </Layout>
   );
 }
 
