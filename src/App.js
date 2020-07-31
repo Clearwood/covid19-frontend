@@ -13,41 +13,8 @@ const { Header, Content } = Layout;
 
 function App() {
   const alert = useAlert();
-  const [data, setData] = useState({
-    cases: [
-      {
-        x: "2020-07-14T19:17:55.924Z",
-        y: "556",
-      },
-      {
-        x: "2020-07-13T19:17:55.999Z",
-        y: "656",
-      },
-    ],
-    deaths: [
-      {
-        x: "2020-07-14T19:17:55.924Z",
-        y: "5",
-      },
-      {
-        x: "2020-07-13T19:17:55.999Z",
-        y: "20",
-      },
-    ],
-    geoId: "AF",
-  });
-  const [countries, setCountries] = useState([
-    {
-      _id: "5f1dd6e3326b132d1f1abe49",
-      name: "Afghanistan",
-      geoId: "AF",
-      countryterritoryCode: "AFG",
-      continentExp: "Asia",
-      createdAt: "2020-07-26T19:17:55.833Z",
-      updatedAt: "2020-07-26T19:17:55.833Z",
-      __v: 0,
-    },
-  ]);
+  const [data, setData] = useState(null);
+  const [countries, setCountries] = useState([]);
   const date = moment(new Date());
   const [selectedDate, setSelectedDate] = useState(date);
   const [tableData, setTableData] = useState([]);
@@ -94,9 +61,9 @@ function App() {
       };
       fetch("http://localhost:3100/cases/byCountry/" + value, requestOptions)
           .then((response) => response.json())
-          .then((data) => {
+          .then((newData) => {
+            setData(newData);
             setCurrent({current: "graph"});
-            setData(data);
           })
           .catch((err) => {
             throw new Error(err);
@@ -149,7 +116,7 @@ function App() {
       handleBatchUpload(content).then(() => {
         setUploading(false);
         alert.show("Successfully uploaded data");
-        setCurrent({ current: "graph" });
+        setCurrent({ current: "table" });
         fetchCountries();
       });
       //console.log(JSON.stringify(content));
@@ -165,7 +132,7 @@ function App() {
       <Layout className="layout">
         <Header>
           <Menu onClick={handleClick} selectedKeys={[current]} mode="horizontal">
-            <Menu.Item key="graph">Dashboard</Menu.Item>
+            <Menu.Item key="table">Dashboard</Menu.Item>
             <Menu.Item key="upload">Upload</Menu.Item>
           </Menu>
         </Header>
