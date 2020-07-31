@@ -1,4 +1,5 @@
 import React from "react";
+import { Table as AntdTable }  from "antd";
 
 class Table extends React.Component {
     render() {
@@ -6,8 +7,8 @@ class Table extends React.Component {
         const columns = [
             {
                 title: 'Country',
-                dataIndex: 'countryLabel',
-                key: 'countryLabel'
+                dataIndex: 'countryName',
+                key: 'countryName'
             },
             {
                 title: 'New Cases',
@@ -26,14 +27,14 @@ class Table extends React.Component {
             },
             {
                 title: 'Deaths / 1M pop',
-                dataIndex: 'deathPerPop',
-                key: 'deathPerPop'
+                dataIndex: 'deathsPerPop',
+                key: 'deathsPerPop'
             },
 
         ];
         return (
             <div>
-                <Table dataSource={dataSource} columns={columns} />;
+                <AntdTable dataSource={dataSource} columns={columns} />;
             </div>
         );
     }
