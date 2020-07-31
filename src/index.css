@@ -24,7 +24,7 @@ html,
 }
 .graph {
   height: 35%;
-  margin: 0.5em 2em 5em;
+  margin-top: 5rem;
 }
 .graph-header {
   text-decoration: underline;

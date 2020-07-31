@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
-import { Layout, Menu, Upload, Button, DatePicker } from "antd";
+import { Layout, Menu, Upload, Button, DatePicker, Spin } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import Graph from "./components/graph.js";
 import Selection from "./components/selection.js";
@@ -38,19 +38,23 @@ function App() {
       });
   }
   function fetchTableData() {
-    const requestOptions = {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    };
-    const dateString = moment(selectedDate).utc(true).hour(0).minute(0).second(0).millisecond(0).toISOString();
-    fetch(`http://localhost:3100/cases/world/${dateString}`, requestOptions)
-        .then((response) => response.json())
-        .then((data) => {
-          setTableData(data.sort((a, b) => b.cases - a.cases));
-        })
-        .catch((err) => {
-          throw new Error(err);
-        });
+    if (selectedDate) {
+      setUploading(true);
+      const requestOptions = {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      };
+      const dateString = moment(selectedDate).utc(true).hour(0).minute(0).second(0).millisecond(0).toISOString();
+      fetch(`http://localhost:3100/cases/world/${dateString}`, requestOptions)
+          .then((response) => response.json())
+          .then((data) => {
+            setTableData(data.sort((a, b) => b.cases - a.cases));
+            setUploading(false);
+          })
+          .catch((err) => {
+            throw new Error(err);
+          });
+    }
   }
 
   const submitForm = (value) => {
@@ -157,9 +161,14 @@ function App() {
           ) : (
               <div id="one">
                 <Selection onSubmit={submitForm} countries={countries} />
-                {current.current === "table" ? (<DatePicker style={{float: 'right'}} onChange={setSelectedDate} />) : ('')}
+                {current.current === "table" ? (
+                    <div style={{float: 'right'}}>
+                      {uploading ? (<Spin style={{float: 'left', margin: 'auto 2em' }} size="large" />) : ('')}
+                      <DatePicker onChange={setSelectedDate} />
+                    </div>
+                ) : ('')}
                 {current.current === "graph" ? (
-                    <div style={{ marginTop: 32 }}>
+                    <div style={{ marginTop: 32, height: '100%' }}>
                       <Graph data={data.cases} title={"Cases"} color={"blue"}/>
                       <Graph data={data.deaths} title={"Deaths"} color={"red"}/>
                     </div>
