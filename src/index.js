@@ -16,11 +16,11 @@ const options = {
 }
 
 ReactDOM.render(
-  <React.StrictMode>
+  <React.Fragment>
       <AlertProvider template={AlertTemplate} {...options}>
           <App />
       </AlertProvider>
-  </React.StrictMode>,
+  </React.Fragment>,
   document.getElementById('root')
 );
 
