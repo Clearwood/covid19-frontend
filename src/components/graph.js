@@ -1,5 +1,6 @@
 import React from "react";
 import { ResponsiveLine } from "@nivo/line";
+import moment from 'moment';
 
 class Graph extends React.Component {
   render() {
@@ -20,7 +21,7 @@ class Graph extends React.Component {
             type: "time",
             format: "%Y-%m-%dT%H:%M:%S.%LZ",
           }}
-          xFormat="time:%Y-%m-%dT%H:%M:%S.%L%Z"
+          xFormat = {(date) => moment(date).utc(false).format("DD.MM.yyyy")}
           yScale={{
             type: "linear",
             min: "auto",
